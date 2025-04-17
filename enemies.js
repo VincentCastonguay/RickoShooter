@@ -4,6 +4,28 @@ import { resetKillCount } from './player.js';
 
 const enemies = [];
 const loader = new THREE.TextureLoader();
+const explosionTexture = loader.load('explosion.png');
+
+function createExplosion(position, scene) {
+  const explosionSound = new Audio('explosion.wav');
+  explosionSound.play();
+  const explosionMaterial = new THREE.MeshBasicMaterial({ map: explosionTexture, transparent: true });
+  const explosion = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    explosionMaterial
+  );
+  explosion.rotation.x = -Math.PI / 2;
+  explosion.position.copy(position);
+  explosion.position.y = 0.5;
+  scene.add(explosion);
+
+  const flash = new THREE.PointLight(0xffaa33, 1, 5);
+  flash.position.copy(position);
+  flash.position.y = 1.5;
+  scene.add(flash);
+  setTimeout(() => scene.remove(flash), 200);
+  setTimeout(() => scene.remove(explosion), 200);
+}
 
 function spawnEnemy(scene, player) {
   const textures = ['enemy1.png', 'enemy2.png', 'enemy3.png'];
@@ -35,15 +57,7 @@ function updateEnemies(player) {
     // Check collision with player
     const distance = enemy.position.distanceTo(player.position);
     if (distance < 1.0) {
-      // Explosion effect
-      const explosion = new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 6, 6),
-        new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffaa00 })
-      );
-      explosion.position.copy(enemy.position);
-      explosion.position.y = 0.5;
-      player.parent.add(explosion);
-      setTimeout(() => player.parent.remove(explosion), 200);
+      createExplosion(enemy.position, player.parent);
 
       // Reset kill counter
       const counter = document.getElementById('kill-counter');
@@ -66,4 +80,4 @@ function startSpawningEnemies(scene, player) {
   setInterval(() => spawnEnemy(scene, player), 2000);
 }
 
-export { enemies, updateEnemies, startSpawningEnemies };
+export { enemies, updateEnemies, startSpawningEnemies, createExplosion };

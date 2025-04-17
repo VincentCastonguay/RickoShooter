@@ -3,6 +3,8 @@ import * as THREE from './three.js';
 import { camera } from './setupScene.js';
 
 const bullets = [];
+const loader = new THREE.TextureLoader();
+const bulletTexture = loader.load('bullet.png');
 const gunshotBase = new Audio('gunshot.wav');
 
 function setupShooting(scene, player, ground) {
@@ -19,13 +21,13 @@ function setupShooting(scene, player, ground) {
     const intersects = raycaster.intersectObject(ground);
     if (intersects.length > 0) {
       const point = intersects[0].point;
-      const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-      const bulletMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-      bullet.position.copy(player.position);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: bulletTexture });
+      const bullet = new THREE.Sprite(spriteMaterial);
+      bullet.scale.set(1, 1, 1);
+            bullet.position.copy(player.position);
       bullet.position.y = 0.5;
       const direction = new THREE.Vector3().subVectors(point, player.position).normalize();
-      bullets.push({ mesh: bullet, direction });
+      bullets.push({ mesh: bullet, direction, rotationSpeed: 0.3 });
       scene.add(bullet);
       const gunshotSound = gunshotBase.cloneNode();
       gunshotSound.play();
@@ -34,13 +36,14 @@ function setupShooting(scene, player, ground) {
 }
 
 import { incrementKillCount } from './player.js';
+import { createExplosion } from './enemies.js';
 
 function updateBullets(scene, enemies) {
-  const explosionBase = new Audio('explosion.wav');
-
+  
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
-    bullet.mesh.position.addScaledVector(bullet.direction, 0.5);
+    bullet.mesh.position.addScaledVector(bullet.direction, 0.25);
+    bullet.mesh.material.rotation += bullet.rotationSpeed;
 
     for (let j = enemies.length - 1; j >= 0; j--) {
       const enemy = enemies[j];
@@ -51,18 +54,9 @@ function updateBullets(scene, enemies) {
         enemies.splice(j, 1);
         bullets.splice(i, 1);
 
-        const explosion = new THREE.Mesh(
-          new THREE.SphereGeometry(0.5, 6, 6),
-          new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffaa00 })
-        );
-        explosion.position.copy(enemy.position);
-        explosion.position.y = 0.5;
-        scene.add(explosion);
-        setTimeout(() => scene.remove(explosion), 200);
+        createExplosion(enemy.position, scene);
 
-        const explosionSound = explosionBase.cloneNode();
-        explosionSound.play();
-incrementKillCount();
+        incrementKillCount();
         break;
       }
     }
