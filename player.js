@@ -15,12 +15,14 @@ loader.load('player.png', (texture) => {
 });
 
 // Handle sprite swap on click
+let angryTimeout;
 const angryTexture = loader.load('angry.png');
 document.addEventListener('click', () => {
   if (spriteMesh) {
     const originalTexture = spriteMesh.material.map;
     spriteMesh.material.map = angryTexture;
-    setTimeout(() => {
+    clearTimeout(angryTimeout);
+    angryTimeout = setTimeout(() => {
       spriteMesh.material.map = originalTexture;
     }, 150);
   }
@@ -69,6 +71,8 @@ raycaster.setFromCamera(mouse, camera);
 }
 
 let killCount = 0;
+const counter = document.getElementById('kill-counter');
+if (counter) counter.textContent = `Kills: 0`;
 function incrementKillCount() {
   killCount++;
   console.log(`Kills: ${killCount}`);
