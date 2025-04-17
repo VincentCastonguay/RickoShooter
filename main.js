@@ -1,4 +1,3 @@
-// main.js
 import { scene, camera, renderer, ground } from './setupScene.js';
 import { player, updatePlayerMovement, updatePlayerRotation } from './player.js';
 import { initControls } from './controls.js';
