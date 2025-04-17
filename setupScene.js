@@ -21,6 +21,13 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
 document.body.appendChild(renderer.domElement);
 
+const combatSong = new Audio('CombatSong.mp3');
+combatSong.loop = true;
+combatSong.volume = 0.1;
+window.addEventListener('click', () => {
+  combatSong.play();
+}, { once: true });
+
 const loader = new THREE.TextureLoader();
 const backgroundTexture = loader.load('background.png');
 backgroundTexture.wrapS = THREE.RepeatWrapping;
@@ -32,7 +39,7 @@ const ground = new THREE.Mesh(bgGeometry, bgMaterial);
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-const ambientLight = new THREE.AmbientLight(0x222222);
+const ambientLight = new THREE.AmbientLight(0xff00ff, 0.2);
 scene.add(ambientLight);
 
 export { scene, camera, renderer, ground };
